@@ -1,0 +1,56 @@
+{
+    "data_loader": {
+        "file_path": "data/raw/Dagitilan_Enerji.xlsx"
+    },
+    "epias": {
+        "username": "gkhntnhntsdln@gmail.com",
+        "password": "9537514682Aa*",
+        "start_year": 2020,
+        "start_month": 1,
+        "start_date": "2020-01-01T00:00:00+03:00",
+        "end_date": null,
+        "company_name": "ULUDAĞ ELEKTRİK DAĞITIM A.Ş.(ED)",
+        "reading_type": "Tek Zamanlı",
+        "process": {
+            "epias_periods": [
+                48,
+                168
+            ],
+            "epias_variables": [
+                "KGUP",
+                "GercekTuketim",
+                "GopAlis",
+                "IaAlis",
+                "YukTahmin"
+            ],
+            "epias_functions": [
+                "mean"
+            ],
+            "epias_window": [
+                48,
+                168
+            ],
+            "pk_path": "data/raw/2020_2025_pk.parquet",
+            "start_date": "2020-01-01T00:00:00+03:00"
+        }
+    },
+    "solar": {
+        "start_date": "2020-01-01",
+        "lat": 40.19683112867639,
+        "long": 29.049976280652263,
+        "alt": 150,
+        "timezone": "Europe/Istanbul"
+    },
+    "historical_weather": {
+        "lat": 40.19683112867639,
+        "long": 29.049976280652263,
+        "timezone": "Europe/Istanbul",
+        "h_start_date": "2020-01-01",
+        "h_end_date": null
+    },
+    "forecast_weather": {
+        "lat": 40.19683112867639,
+        "long": 29.049976280652263,
+        "timezone": "Europe/Istanbul"
+    }
+}
