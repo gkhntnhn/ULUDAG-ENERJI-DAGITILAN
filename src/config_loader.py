@@ -18,8 +18,8 @@ def load_config(config_path: str, data_df: pd.DataFrame = None) -> dict:
     config["solar"]["end_date"] = solar_end
 
     # Calendar tarihleri eğer veri seti verildiyse onun üzerinden hesaplanır
-    if data_df is not None and "Date" in data_df.columns:
-        min_date = pd.to_datetime(data_df["Date"].min())
+    if data_df is not None and "date" in data_df.columns:
+        min_date = pd.to_datetime(data_df["date"].min())
         max_date = min_date + pd.DateOffset(years=10)
         config["calendar"] = {
             "start_date": min_date.strftime("%Y-%m-%d %H:%M:%S"),

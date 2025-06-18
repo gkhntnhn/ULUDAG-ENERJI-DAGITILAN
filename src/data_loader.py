@@ -10,11 +10,11 @@ class DataLoader:
         try:
             df = pd.read_excel(self.file_path, sheet_name=sheet_name)
 
-            df["Date"] = pd.to_datetime(df["Date"]) + pd.to_timedelta(
-                df["Time"], unit="h"
+            df["date"] = pd.to_datetime(df["date"]) + pd.to_timedelta(
+                df["time"], unit="h"
             )
 
-            self.df = df[["Date", "Consumption"]].copy()
+            self.df = df[["date", "consumption"]].copy()
             return self.df
 
         except Exception as e:
