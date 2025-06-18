@@ -8,7 +8,7 @@ def load_config(config_path: str, data_df: pd.DataFrame = None) -> dict:
         config = json.load(f)
 
     # EPİAŞ end_date dinamik olarak bugünün bir gün öncesi yapılır
-    today = datetime.now().strftime("%Y-%m-%dT00:00:00+03:00")
+    today = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%dT00:00:00+03:00")
     if config["epias"]["end_date"] is None:
         config["epias"]["end_date"] = today
 
