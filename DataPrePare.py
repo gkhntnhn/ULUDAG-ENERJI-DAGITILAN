@@ -5,8 +5,6 @@ from src.data_loader import DataLoader
 from src.epias_data import EpiasDataProcessor
 from src.solar_data import SolarDataProcessor
 from src.calendar_data import CalendarDataProcessor
-from src.historical_weather_data import HistoricalWeatherDataProcessor
-from src.forecast_weather_data import ForecastWeatherDataProcessor
 from utils.data_prepare_config import data_prepare_config
 from utils.data_prepare_functions import DataPrepareFunctions
 import pandas as pd
@@ -39,6 +37,7 @@ def DataPrepare(data_path, config_path):
     # Konfigürasyonu yükle
     # -----------------------------
     config = data_prepare_config(config_path, data_df=data)
+    prepare_functions = DataPrepareFunctions()
     # -----------------------------
 
     # -----------------------------
@@ -95,43 +94,12 @@ def DataPrepare(data_path, config_path):
     # -----------------------------
 
     # -----------------------------
-    # Historical Weather Data
+    # Weather Data
     # -----------------------------
-    h_weather_cfg = config["historical_weather"]
-
-    historical_data_processor = HistoricalWeatherDataProcessor(
-        lat=h_weather_cfg["lat"],
-        lon=h_weather_cfg["long"],
-        start_date=h_weather_cfg["h_start_date"],
-        end_date=h_weather_cfg["h_end_date"],
-        timezone=h_weather_cfg["timezone"],
-    )
-
-    historical_weather_df = historical_data_processor.fetch()
-    # -----------------------------
-
-    # -----------------------------
-    # Forecast Weather Data
-    # -----------------------------
-    f_weather_cfg = config["forecast_weather"]
-
-    forecast_data_processor = ForecastWeatherDataProcessor(
-        lat=f_weather_cfg["lat"],
-        lon=f_weather_cfg["long"],
-        start_date=f_weather_cfg["f_start_date"],
-        end_date=f_weather_cfg["f_end_date"],
-        timezone=f_weather_cfg["timezone"],
-    )
-
-    forecast_weather_df = forecast_data_processor.fetch()
-    # -----------------------------
-
-    # -----------------------------
-    # Prepare Weather Data
-    # -----------------------------
-    prepare_functions = DataPrepareFunctions()
-    weather_df = prepare_functions.prepare_weather_data(
-        historical_weather_df, forecast_weather_df
+    weather_df = prepare_functions.generate_multi_location_weather_data(config)
+    weighted_weather_df = prepare_functions.weighted_average_weather_data(
+        weather_df,
+        config["location_weights"]
     )
     # -----------------------------
 
@@ -140,7 +108,7 @@ def DataPrepare(data_path, config_path):
     # Prepare Main Data
     # -----------------------------
     df = prepare_functions.main_data_prepare(
-        data, epias_df, solar_df, calendar_df, weather_df
+        data, epias_df, solar_df, calendar_df, weather_df,weighted_weather_df
     )
     # -----------------------------
 
@@ -151,11 +119,9 @@ def DataPrepare(data_path, config_path):
         df, r"data//processed//", r"data//processed//"
     )
     # -----------------------------
-    print("Data preparation and saving completed successfully.")
 
 if __name__ == "__main__":
     DataPrepare(data_path, config_path)
     print("Data preparation script executed successfully.")
-
 
 
