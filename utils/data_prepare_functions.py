@@ -3,6 +3,7 @@ from functools import reduce
 from src.historical_weather_data import HistoricalWeatherDataProcessor
 from src.forecast_weather_data import ForecastWeatherDataProcessor
 
+
 class DataPrepareFunctions:
     def __init__(self):
         pass
@@ -13,8 +14,17 @@ class DataPrepareFunctions:
         )
         return weather_df.reset_index(drop=True)
 
-    def main_data_prepare(self, data, epias_df, solar_df, calendar_df, weather_df, weighted_weather_df):
-        dataframes = [data, epias_df, solar_df, calendar_df, weather_df, weighted_weather_df]
+    def main_data_prepare(
+        self, data, epias_df, solar_df, calendar_df, weather_df, weighted_weather_df
+    ):
+        dataframes = [
+            data,
+            epias_df,
+            solar_df,
+            calendar_df,
+            weather_df,
+            weighted_weather_df,
+        ]
         # Tüm dataframe'lerdeki 'date' sütunlarının timezone'unu kaldır
         for i in range(len(dataframes)):
             if pd.api.types.is_datetime64tz_dtype(dataframes[i]["date"]):
@@ -43,7 +53,7 @@ class DataPrepareFunctions:
         forecast_df = df.iloc[-48:, :].copy()
         forecast_df.to_parquet(forecast_df_path + "Forecast_Data.parquet")
         return df
-    
+
     def generate_multi_location_weather_data(self, config):
         weather_dfs = []
 
@@ -73,10 +83,12 @@ class DataPrepareFunctions:
             # --- Merge both & rename ---
             merged_weather = self.prepare_weather_data(historical_df, forecast_df)
 
-            renamed_weather = merged_weather.rename(columns={
-                col: f"{col}_{location_name}" if col != "date" else col
-                for col in merged_weather.columns
-            })
+            renamed_weather = merged_weather.rename(
+                columns={
+                    col: f"{col}_{location_name}" if col != "date" else col
+                    for col in merged_weather.columns
+                }
+            )
 
             weather_dfs.append(renamed_weather)
 
@@ -86,7 +98,7 @@ class DataPrepareFunctions:
             weather_df_final = pd.merge(weather_df_final, df, on="date", how="outer")
 
         return weather_df_final.reset_index(drop=True)
-    
+
     def weighted_average_weather_data(self, weather_df, location_weights):
         weather_df = weather_df.copy()
 
@@ -95,14 +107,17 @@ class DataPrepareFunctions:
 
         # Sadece sayısal sütunlar
         numeric_cols = [
-            col for col in weather_df.columns
+            col
+            for col in weather_df.columns
             if col != "date" and pd.api.types.is_numeric_dtype(weather_df[col])
         ]
 
         # Her bir ölçüm (örneğin temperature_2m) için
         for base_col in set(c.rsplit("_", 1)[0] for c in numeric_cols):
             # İlgili şehirli tüm kolonları bul
-            cols_for_feature = [col for col in numeric_cols if col.startswith(base_col + "_")]
+            cols_for_feature = [
+                col for col in numeric_cols if col.startswith(base_col + "_")
+            ]
 
             # Ağırlıklı toplamı hesapla
             weighted_sum = sum(
@@ -114,4 +129,3 @@ class DataPrepareFunctions:
             base_df[base_col + "_mixed"] = weighted_sum
 
         return base_df
-
