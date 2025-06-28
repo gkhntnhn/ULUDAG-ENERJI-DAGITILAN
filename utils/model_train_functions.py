@@ -12,19 +12,15 @@ class ModelTrainFunctions:
         historical_data.index = pd.to_datetime(historical_data.index)
         forecast_data.index = pd.to_datetime(forecast_data.index)
         return historical_data, forecast_data
-
+    
     def get_tscv_splits(self, dates, n_splits, test_size):
         """
-        Generate time series cross-validation splits.
-
-        Parameters:
-        - dates: pd.DatetimeIndex or pd.Series of dates.
-        - n_splits: Number of splits for cross-validation.
-        - test_size: Size of the test set for each split.
+        TimeSeriesSplit kullanarak her split'in başlangıç ve bitiş tarihlerini döndürür.
         """
         tscv = TimeSeriesSplit(n_splits=n_splits, test_size=test_size)
         splits_info = []
         dates = pd.to_datetime(dates)
+
         if isinstance(dates, pd.DatetimeIndex):
             dates = pd.Series(dates)
 
@@ -37,6 +33,7 @@ class ModelTrainFunctions:
             splits_info.append(split_info)
 
         return splits_info
+    
     
     def plot_splits(self, splits_info, data, colors=None):
 
@@ -115,3 +112,89 @@ class ModelTrainFunctions:
             "Abs": abs(y_true - y_pred)
         })
         return mape_df, round(mape_df["Abs"].sum() / mape_df["Gerçek"].sum() * 100, 2)
+    
+    def all_splits_mape_analysis(self, model_performance):
+        fig, (ax_hour, ax_weekday, ax_month) = plt.subplots(1, 3, figsize=(20, 5))
+        fig.suptitle("MAPE Analysis Across Splits", fontsize=16)
+        def mape_analysis(df, ax_hour, ax_weekday, ax_month, split_name):
+            result = df.copy()
+            result['hour'] = result.index.hour
+            hourly_mape = result.groupby('hour').apply(lambda x: (x['Abs'].sum() / x['Gerçek'].sum()) * 100)
+            result['weekday'] = result.index.weekday
+            weekday_mape = result.groupby('weekday').apply(lambda x: (x['Abs'].sum() / x['Gerçek'].sum()) * 100)
+            result['month'] = result.index.month
+            monthly_mape = result.groupby('month').apply(lambda x: (x['Abs'].sum() / x['Gerçek'].sum()) * 100)
+            monthly_mape = monthly_mape.reindex(range(1, 13), fill_value=0)
+            ax_hour.plot(hourly_mape.index, hourly_mape, label=split_name)
+            weekdays = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar']
+            ax_weekday.plot(weekdays, weekday_mape, label=split_name)
+            months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
+                    'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
+            ax_month.plot(months, monthly_mape, label=split_name)
+        split_names = [col for col in model_performance.keys() if "Split" in col]
+        for split in split_names:
+            test_df = model_performance[split]["val_df"]
+            mape_analysis(test_df, ax_hour, ax_weekday, ax_month, split)
+        ax_hour.set_title("Günün Saatlerine Göre Ortalama MAPE")
+        ax_hour.set_xlabel("Saatler")
+        ax_hour.set_ylabel("MAPE (%)")
+        ax_hour.legend()
+        ax_weekday.set_title("Haftanın Günlerine Göre Ortalama MAPE")
+        ax_weekday.set_xlabel("Haftanın Günleri")
+        ax_weekday.set_ylabel("MAPE (%)")
+        ax_weekday.legend()
+        ax_month.set_title("Aylara Göre Ortalama MAPE")
+        ax_month.set_xlabel("Aylar")
+        ax_month.set_ylabel("MAPE (%)")
+        ax_month.legend()
+        plt.tight_layout(rect=[0, 0, 1, 0.96])
+        plt.show()
+
+    def all_splits_mape_analysis_v2(self, model_performance):
+        split_names = [col for col in model_performance.keys() if "Split" in col]
+        num_splits = len(split_names)
+        fig, axs = plt.subplots(num_splits, 3, figsize=(15, 4 * num_splits), sharey='col')
+        fig.suptitle("MAPE Analysis Across Splits", fontsize=16)
+
+        # İç içe MAPE analiz fonksiyonu
+        def mape_analysis(df, ax_hour, ax_weekday, ax_month):
+            result = df.copy()
+
+            # Günün saatine göre MAPE hesabı
+            result['hour'] = result.index.hour
+            hourly_mape = result.groupby('hour').apply(lambda x: (x['Abs'].sum() / x['Gerçek'].sum()) * 100)
+
+            # Haftanın günlerine göre MAPE hesabı
+            result['weekday'] = result.index.weekday
+            weekday_mape = result.groupby('weekday').apply(lambda x: (x['Abs'].sum() / x['Gerçek'].sum()) * 100)
+
+            # Aylara göre MAPE hesabı ve eksik ayları sıfırlarla doldurma
+            result['month'] = result.index.month
+            monthly_mape = result.groupby('month').apply(lambda x: (x['Abs'].sum() / x['Gerçek'].sum()) * 100)
+            monthly_mape = monthly_mape.reindex(range(1, 13), fill_value=0)
+
+            # Saatlik, Haftalık ve Aylık MAPE grafikleri
+            ax_hour.bar(hourly_mape.index, hourly_mape)
+            ax_weekday.bar(['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'], weekday_mape)
+            ax_month.bar(['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'], monthly_mape)
+
+        # Her split için MAPE analizini yap
+        split_names = [col for col in model_performance.keys() if "Split" in col]
+        for idx, split in enumerate(split_names):
+            test_df = model_performance[split]["val_df"]
+            ax_hour, ax_weekday, ax_month = axs[idx, 0], axs[idx, 1], axs[idx, 2]
+
+            mape_analysis(test_df, ax_hour, ax_weekday, ax_month)
+
+            # Split başlıkları
+            ax_hour.set_title(f"{split} - Günün Saatlerine Göre MAPE")
+            ax_weekday.set_title(f"{split} - Haftanın Günlerine Göre MAPE")
+            ax_month.set_title(f"{split} - Aylara Göre MAPE")
+
+        # Ortak eksen başlıkları
+        for ax in axs[:, 0]:
+            ax.set_ylabel("MAPE (%)")
+
+        # Genel başlık ve düzenlemeler
+        fig.tight_layout(rect=[0, 0, 1, 0.96])  # Başlık için üst boşluk ekliyoruz
+        plt.show()
