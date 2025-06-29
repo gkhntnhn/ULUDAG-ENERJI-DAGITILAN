@@ -65,10 +65,10 @@ class DataPrepareFunctions:
         df[bool_cols] = df[bool_cols].apply(lambda x: x.astype(bool))
 
         historical_df = df.iloc[:-48, :].copy()
-        historical_df.to_parquet(historical_df_path + "Historical_Data_" + self.current_time + ".parquet")
+        historical_df.to_parquet(historical_df_path + "/Historical_Data_" + self.current_time + ".parquet")
         forecast_df = df.iloc[-48:, :].copy()
-        forecast_df.to_parquet(forecast_df_path + "Forecast_Data_" + self.current_time + ".parquet")
-        forecast_df_result_path = forecast_df_path + "Forecast_Data_" + self.current_time + ".parquet"
+        forecast_df.to_parquet(forecast_df_path + "/Forecast_Data_" + self.current_time + ".parquet")
+        forecast_df_result_path = forecast_df_path + "/Forecast_Data_" + self.current_time + ".parquet"
         return df,forecast_df_result_path
 
     def generate_multi_location_weather_data(self, config):

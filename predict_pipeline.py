@@ -11,13 +11,16 @@ class ForecastPipeline:
 
         self.data_path = os.path.join(self.BASE_DIR, "input", "consumption.xlsx")
         self.config_path = os.path.join(self.BASE_DIR, "utils", "config.json")
-        self.historical_path = os.path.join(self.BASE_DIR, "data", "processed")
-        self.forecast_path = os.path.join(self.BASE_DIR, "data", "processed")
+        self.historical_path = os.path.join(self.BASE_DIR, "data")
+        self.forecast_path = os.path.join(self.BASE_DIR, "data")
         self.input_path = os.path.join(self.BASE_DIR, "input")
         self.output_path = os.path.join(self.BASE_DIR, "output")
 
-        self.current_time = time.strftime("%Y_%m_%d %H_%M_%S", time.localtime())
-        self.current_day = time.strftime("%Y_%m_%d", time.localtime())
+        self.current_time = None
+        self.current_day = None
+
+        #self.current_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        #self.current_day = time.strftime("%Y_%m_%d", time.localtime())
 
         # DataPrepare instance
         self.DP = DataPrepare(
