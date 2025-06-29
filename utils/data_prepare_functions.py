@@ -19,10 +19,11 @@ class DataPrepareFunctions:
         return weather_df.reset_index(drop=True)
 
     def main_data_prepare(
-        self, data, epias_df, solar_df, calendar_df, weather_df, weighted_weather_df
+        self, data, consumption, epias_df, solar_df, calendar_df, weather_df, weighted_weather_df
     ):
         dataframes = [
             data,
+            consumption,
             epias_df,
             solar_df,
             calendar_df,

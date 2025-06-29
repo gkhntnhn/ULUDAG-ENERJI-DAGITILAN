@@ -1,12 +1,10 @@
 import requests
 import json
 import pandas as pd
-
-pd.set_option("display.width", 50000)
-pd.set_option("display.max_columns", None)
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from functools import reduce
+import time
 from sklearn.pipeline import Pipeline
 from feature_engine.timeseries.forecasting import (
     LagFeatures,
@@ -14,6 +12,8 @@ from feature_engine.timeseries.forecasting import (
     ExpandingWindowFeatures,
 )
 
+pd.set_option("display.width", 50000)
+pd.set_option("display.max_columns", None)
 
 class EpiasDataProcessor:
     def __init__(self):
@@ -227,24 +227,25 @@ class EpiasDataProcessor:
         print(f"İşlem Başladı. {current_time_str()}")
 
         TGT_code = self.get_tgt_code(username, password)
+        time.sleep(5)
         kgup_data = self.get_kgup_data(start_year, start_month, tgt_code=TGT_code)
+        time.sleep(25)  # To avoid rate limiting
 
         gercek_tuketim_data = self.get_gercek_tuketim_data_by_year(
             start_date, end_date, tgt_code=TGT_code
         )
-
+        time.sleep(25)
         gop_alis_data = self.get_gop_alis_data_by_year(
             start_date, end_date, tgt_code=TGT_code
         )
-
+        time.sleep(25)
         ia_alis_data = self.get_ia_alis_data_by_year(
             start_date, end_date, tgt_code=TGT_code
         )
-
+        time.sleep(25)
         yuk_tahmin_alis_data = self.get_yuk_tahmin_data_by_year(
             start_date, end_date, tgt_code=TGT_code
         )
-
         dfs = [
             kgup_data,
             gercek_tuketim_data,

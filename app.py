@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, send_file
+from flask import Flask, request, render_template, send_file, redirect, url_for
 from datetime import datetime
 import os
 import shutil
@@ -7,65 +7,91 @@ from predict_pipeline import ForecastPipeline
 
 app = Flask(__name__)
 
-# Klasörler
+# Klasör yolları
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 INPUT_DIR = os.path.join(BASE_DIR, "input")
 RAW_DIR = os.path.join(INPUT_DIR, "raw")
 OUTPUT_DIR = os.path.join(BASE_DIR, "output")
 
-# Gerekli klasörler varsa oluştur
+# Gerekli klasörler oluşturuluyor
 os.makedirs(INPUT_DIR, exist_ok=True)
 os.makedirs(RAW_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+# Yardımcı: klasörden dosya isimlerini getir
+def get_file_list(folder_path, prefix=None):
+    files = []
+    if os.path.exists(folder_path):
+        for fname in os.listdir(folder_path):
+            if prefix and not fname.startswith(prefix):
+                continue
+            if fname.endswith(".xlsx"):
+                files.append(fname)
+    files.sort(reverse=True)
+    return files
+
 @app.route("/", methods=["GET", "POST"])
 def upload_file():
+    error_message = None  # Default hata mesajı boş
+
     if request.method == "POST":
         file = request.files["file"]
-
-        # Timestamp oluştur
         timestamp = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-        print("timestamp:", timestamp)
 
-        # Orijinal dosya adı (uzantısı dahil)
         original_filename = file.filename
         original_name, extension = os.path.splitext(original_filename)
 
-        # input/raw klasörüne yedekle (orijinal adla)
         raw_filename = f"{original_name}_{timestamp}{extension}"
         raw_path = os.path.join(RAW_DIR, raw_filename)
         file.save(raw_path)
 
-        # input klasörüne modelin beklediği adla kopyala
         model_input_filename = f"client_upload_{timestamp}{extension}"
         model_input_path = os.path.join(INPUT_DIR, model_input_filename)
         shutil.copyfile(raw_path, model_input_path)
 
-        # ForecastPipeline’a input path’i gönder
-        pipeline = ForecastPipeline()
-        pipeline.data_path = model_input_path  # dinamik input atanıyor
-        pipeline.current_time = datetime.strptime(timestamp, "%Y_%m_%d_%H_%M_%S").strftime("%Y_%m_%d_%H_%M_%S")  # model bunu timestamp olarak kullanıyor
-        pipeline.current_day = datetime.strptime(timestamp, "%Y_%m_%d_%H_%M_%S").strftime("%Y_%m_%d")
-        print("pipeline.current_time:", pipeline.current_time)
-        print("pipeline.current_day:", pipeline.current_day)
-        pipeline.run()
+        try:
+            pipeline = ForecastPipeline()
+            pipeline.data_path = model_input_path
+            pipeline.current_time = datetime.strptime(timestamp, "%Y_%m_%d_%H_%M_%S").strftime("%Y_%m_%d_%H_%M_%S")
+            pipeline.current_day = datetime.strptime(timestamp, "%Y_%m_%d_%H_%M_%S").strftime("%Y_%m_%d")
+            pipeline.run()
 
-        # Çıktı dosyasının yolu
-        output_filename = f"Forecast_Results_{timestamp}.xlsx"
-        output_path = os.path.join(OUTPUT_DIR, pipeline.current_day, output_filename)
-        print("output_path:", output_path)
+        except Exception as e:
+            print(f"Hata oluştu: {e}")
+            if os.path.exists(model_input_path):
+                os.remove(model_input_path)
+            if os.path.exists(raw_path):
+                os.remove(raw_path)
 
-        if os.path.exists(output_path):
-            return render_template("result.html", download_link=output_path)
-        else:
-            return "Çıktı dosyası bulunamadı.", 500
+            # Hata mesajını template'e ilet
+            error_message = f"İşlem sırasında hata oluştu: {str(e)}. Lütfen tekrar deneyiniz."
 
-    return render_template("upload.html")
+    input_files = get_file_list(INPUT_DIR, prefix="client_upload")
+    today_output_folder = os.path.join(OUTPUT_DIR, datetime.now().strftime("%Y_%m_%d"))
+    output_files = get_file_list(today_output_folder)
+
+    return render_template(
+        "dashboard.html",
+        input_files=input_files,
+        output_files=output_files,
+        error_message=error_message
+    )
 
 
-@app.route("/download/<path:filename>")
-def download_file(filename):
-    return send_file(filename, as_attachment=True)
+@app.route("/download/<folder>/<filename>")
+def download_file(folder, filename):
+    if folder == "input":
+        path = os.path.join(INPUT_DIR, filename)
+    elif folder == "output":
+        output_subdir = os.path.join(OUTPUT_DIR, datetime.now().strftime("%Y_%m_%d"))
+        path = os.path.join(output_subdir, filename)
+    else:
+        return "Geçersiz klasör adı", 400
+
+    if not os.path.exists(path):
+        return "Dosya bulunamadı", 404
+
+    return send_file(path, as_attachment=True)
 
 if __name__ == "__main__":
     app.run(debug=True)

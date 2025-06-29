@@ -72,5 +72,11 @@
     },
     "forecast_weather": {
         "timezone": "Europe/Istanbul"
+    },
+
+    "consumption":{
+        "variables": ["consumption"],
+        "lags": [48,49,50,51,52, 168,169,170,171,172,336,504,672],
+        "functions": ["mean", "std", "min", "max", "median"]
     }
 }

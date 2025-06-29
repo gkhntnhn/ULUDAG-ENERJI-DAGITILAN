@@ -5,6 +5,7 @@ from src.data_loader import DataLoader
 from src.epias_data import EpiasDataProcessor
 from src.solar_data import SolarDataProcessor
 from src.calendar_data import CalendarDataProcessor
+from src.consumption_data import ConsumptionDataProcessor
 from utils.data_prepare_config import data_prepare_config
 from utils.data_prepare_functions import DataPrepareFunctions
 import pandas as pd
@@ -53,6 +54,16 @@ class DataPrepare:
         # -----------------------------
         config = data_prepare_config(config_path, data_df=data)
         prepare_functions = DataPrepareFunctions()
+        # -----------------------------
+
+        # -----------------------------
+        # Consumption Data
+        # -----------------------------
+        consumption_cfg = config["consumption"]
+        consumption_processor = ConsumptionDataProcessor(variables=consumption_cfg["variables"],
+                                                         lags=consumption_cfg["lags"],
+                                                         functions=consumption_cfg["functions"])
+        consumption = consumption_processor.transform(df=data)
         # -----------------------------
 
         # -----------------------------
@@ -123,7 +134,7 @@ class DataPrepare:
         # Prepare Main Data
         # -----------------------------
         df = prepare_functions.main_data_prepare(
-            data, epias_df, solar_df, calendar_df, weather_df, weighted_weather_df
+            data, consumption, epias_df, solar_df, calendar_df, weather_df, weighted_weather_df
         )
         # -----------------------------
 
