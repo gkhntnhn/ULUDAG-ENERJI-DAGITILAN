@@ -2,10 +2,14 @@ import pandas as pd
 from functools import reduce
 from src.historical_weather_data import HistoricalWeatherDataProcessor
 from src.forecast_weather_data import ForecastWeatherDataProcessor
+import time 
+import os
 
 
 class DataPrepareFunctions:
     def __init__(self):
+        self.current_time = time.strftime("%Y_%m_%d %H_%M_%S", time.localtime())
+        self.current_day = time.strftime("%Y_%m_%d", time.localtime())
         pass
 
     def prepare_weather_data(self, historical_weather_df, forecast_weather_df):
@@ -39,6 +43,18 @@ class DataPrepareFunctions:
         return df
 
     def process_save_main_data(self, df, historical_df_path, forecast_df_path):
+
+        day_folder = historical_df_path + "/" + self.current_day + "/"
+
+        # Create directories if they do not exist
+        os.makedirs(day_folder, exist_ok=True)
+
+        historical_df_path = day_folder + "Historical_Data/"
+        forecast_df_path = day_folder + "Forecast_Data/"
+
+        os.makedirs(historical_df_path, exist_ok=True)
+        os.makedirs(forecast_df_path, exist_ok=True)
+
         cat_cols = df.select_dtypes(exclude="number").columns
         num_cols = df.select_dtypes(include="number").columns
 
@@ -49,10 +65,11 @@ class DataPrepareFunctions:
         df[bool_cols] = df[bool_cols].apply(lambda x: x.astype(bool))
 
         historical_df = df.iloc[:-48, :].copy()
-        historical_df.to_parquet(historical_df_path + "Historical_Data.parquet")
+        historical_df.to_parquet(historical_df_path + "Historical_Data_" + self.current_time + ".parquet")
         forecast_df = df.iloc[-48:, :].copy()
-        forecast_df.to_parquet(forecast_df_path + "Forecast_Data.parquet")
-        return df
+        forecast_df.to_parquet(forecast_df_path + "Forecast_Data_" + self.current_time + ".parquet")
+        forecast_df_result_path = forecast_df_path + "Forecast_Data_" + self.current_time + ".parquet"
+        return df,forecast_df_result_path
 
     def generate_multi_location_weather_data(self, config):
         weather_dfs = []

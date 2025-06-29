@@ -228,27 +228,22 @@ class EpiasDataProcessor:
 
         TGT_code = self.get_tgt_code(username, password)
         kgup_data = self.get_kgup_data(start_year, start_month, tgt_code=TGT_code)
-        print(f"Kesinleşmiş Günlük Üretim Planı tamamlandı. {current_time_str()}")
 
         gercek_tuketim_data = self.get_gercek_tuketim_data_by_year(
             start_date, end_date, tgt_code=TGT_code
         )
-        print(f"Gerçek Tüketim tamamlandı. {current_time_str()}")
 
         gop_alis_data = self.get_gop_alis_data_by_year(
             start_date, end_date, tgt_code=TGT_code
         )
-        print(f"Gün Öncesi Piyasası tamamlandı. {current_time_str()}")
 
         ia_alis_data = self.get_ia_alis_data_by_year(
             start_date, end_date, tgt_code=TGT_code
         )
-        print(f"İkili Anlaşmalar tamamlandı. {current_time_str()}")
 
         yuk_tahmin_alis_data = self.get_yuk_tahmin_data_by_year(
             start_date, end_date, tgt_code=TGT_code
         )
-        print(f"Yük Tahmin Planı tamamlandı. {current_time_str()}")
 
         dfs = [
             kgup_data,

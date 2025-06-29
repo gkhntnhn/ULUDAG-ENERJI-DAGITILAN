@@ -72,7 +72,7 @@ class DataPrepare:
         )
 
         epias_proc = epias_cfg["process"]
-        pk_path = os.path.join(BASE_DIR, "data", "raw", "2020_2025_pk.parquet")
+        pk_path = os.path.join(BASE_DIR, "2020_2025_pk.parquet")
         epias_df = epias_processor.epias_processor(
             epias_df_raw,
             epias_proc["epias_periods"],
@@ -130,9 +130,9 @@ class DataPrepare:
         # -----------------------------
         # Process and Save Main Data
         # -----------------------------
-        df = prepare_functions.process_save_main_data(
+        df, forecast_df_result_path = prepare_functions.process_save_main_data(
             df, self.historical_path, self.forecast_path
         )
         # -----------------------------
 
-        return df
+        return df, forecast_df_result_path
