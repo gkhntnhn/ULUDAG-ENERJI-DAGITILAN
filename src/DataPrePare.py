@@ -21,12 +21,12 @@ warnings.filterwarnings("ignore")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+
 class DataPrepare:
     """
     Class to handle data preparation tasks.
     This class orchestrates the loading, processing, and saving of data.
     """
-    
 
     def __init__(self, data_path, config_path, historical_path, forecast_path):
         self.data_path = data_path

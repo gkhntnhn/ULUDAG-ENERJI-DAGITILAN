@@ -1,4 +1,4 @@
-from DataPrePare import DataPrepare
+from src.DataPrePare import DataPrepare
 import pandas as pd
 import catboost as cb
 import time
@@ -16,10 +16,12 @@ result_path = os.path.join(BASE_DIR, "result")
 DP = DataPrepare(data_path, config_path, historical_path, forecast_path)
 df = DP.DataPrepareFunction(data_path, config_path, historical_path, forecast_path)
 
-forecast = pd.read_parquet(os.path.join(BASE_DIR, forecast_path, "Forecast_Data.parquet"))
+forecast = pd.read_parquet(
+    os.path.join(BASE_DIR, forecast_path, "Forecast_Data.parquet")
+)
 
 model = cb.CatBoostRegressor()
-model.load_model(os.path.join(BASE_DIR, "models","exp_model.cbm"))
+model.load_model(os.path.join(BASE_DIR, "models", "exp_model.cbm"))
 
 
 result = pd.DataFrame(
@@ -34,5 +36,9 @@ now_day = time.strftime("%Y-%m-%d", time.localtime())
 os.makedirs(os.path.join(BASE_DIR, result_path, now_day), exist_ok=True)
 
 if __name__ == "__main__":
-    result.to_excel(os.path.join(BASE_DIR, result_path, now_day, f"Forecast_Results_{now}.xlsx"))
-    print(f"Forecasting completed and results saved to {now_day}/Forecast_Results_{now}.xlsx")
+    result.to_excel(
+        os.path.join(BASE_DIR, result_path, now_day, f"Forecast_Results_{now}.xlsx")
+    )
+    print(
+        f"Forecasting completed and results saved to {now_day}/Forecast_Results_{now}.xlsx"
+    )
