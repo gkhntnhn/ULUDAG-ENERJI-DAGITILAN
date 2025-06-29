@@ -44,13 +44,13 @@ class DataPrepareFunctions:
 
     def process_save_main_data(self, df, historical_df_path, forecast_df_path):
 
-        day_folder = historical_df_path + "/" + self.current_day + "/"
+        day_folder = os.path.join(historical_df_path, self.current_day)
 
         # Create directories if they do not exist
         os.makedirs(day_folder, exist_ok=True)
 
-        historical_df_path = day_folder + "Historical_Data/"
-        forecast_df_path = day_folder + "Forecast_Data/"
+        historical_df_path = os.path.join(day_folder, "Historical_Data")
+        forecast_df_path = os.path.join(day_folder, "Forecast_Data")
 
         os.makedirs(historical_df_path, exist_ok=True)
         os.makedirs(forecast_df_path, exist_ok=True)
@@ -136,11 +136,12 @@ class DataPrepareFunctions:
                 col for col in numeric_cols if col.startswith(base_col + "_")
             ]
 
-            # Ağırlıklı toplamı hesapla
-            weighted_sum = sum(
-                weather_df[col] * location_weights.get(col.rsplit("_", 1)[-1], 0)
-                for col in cols_for_feature
-            )
+            # Ağırlık vektörünü oluştur
+            weights = [location_weights.get(col.rsplit("_", 1)[-1], 0) for col in cols_for_feature]
+            feature_matrix = weather_df[cols_for_feature].values
+
+            # Ağırlıklı ortalamayı vektörize şekilde hesapla
+            weighted_sum = (feature_matrix * weights).sum(axis=1)
 
             # Yeni isimle ekle
             base_df[base_col + "_mixed"] = weighted_sum

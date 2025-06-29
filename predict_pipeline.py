@@ -9,7 +9,7 @@ class ForecastPipeline:
     def __init__(self):
         self.BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-        self.data_path = os.path.join(self.BASE_DIR, "data", "raw", "consumption.xlsx")
+        self.data_path = os.path.join(self.BASE_DIR, "input", "consumption.xlsx")
         self.config_path = os.path.join(self.BASE_DIR, "utils", "config.json")
         self.historical_path = os.path.join(self.BASE_DIR, "data", "processed")
         self.forecast_path = os.path.join(self.BASE_DIR, "data", "processed")
@@ -46,7 +46,7 @@ class ForecastPipeline:
         ).set_index(forecast.index)
 
         # Save results
-        day_folder = os.path.join(self.BASE_DIR, self.output_path, self.current_day)
+        day_folder = os.path.join(self.output_path, self.current_day)
         os.makedirs(day_folder, exist_ok=True)
 
         file_path = os.path.join(
