@@ -8,8 +8,8 @@ class ModelTrainFunctions:
         pass
 
     def get_data(self, data_path: str) -> pd.DataFrame:
-        historical_data = pd.read_parquet(data_path + "/Historical_Data.parquet")
-        forecast_data = pd.read_parquet(data_path + "/Forecast_Data.parquet")
+        historical_data = pd.read_parquet(data_path + "Historical_Data.parquet")
+        forecast_data = pd.read_parquet(data_path + "Forecast_Data.parquet")
         historical_data.index = pd.to_datetime(historical_data.index)
         forecast_data.index = pd.to_datetime(forecast_data.index)
         return historical_data, forecast_data

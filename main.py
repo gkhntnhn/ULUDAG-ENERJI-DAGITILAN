@@ -4,21 +4,22 @@ import catboost as cb
 import time
 import os
 
-base = r"C:/Users/pc/Desktop/ULUDAG-ENERJI-DAGITILAN/"
-data_path = r"data/raw/consumption.xlsx"
-config_path = r"data/raw/config.json"
-historical_path = r"data/processed/"
-forecast_path = r"data/processed/"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-result_path = r"result/"
+data_path = os.path.join(BASE_DIR, "data", "raw", "consumption.xlsx")
+config_path = os.path.join(BASE_DIR, "data", "raw", "config.json")
+historical_path = os.path.join(BASE_DIR, "data", "processed")
+forecast_path = os.path.join(BASE_DIR, "data", "processed")
+
+result_path = os.path.join(BASE_DIR, "result")
 
 DP = DataPrepare(data_path, config_path, historical_path, forecast_path)
 df = DP.DataPrepareFunction(data_path, config_path, historical_path, forecast_path)
 
-forecast = pd.read_parquet(base + forecast_path + "Forecast_Data.parquet")
+forecast = pd.read_parquet(os.path.join(BASE_DIR, forecast_path, "Forecast_Data.parquet"))
 
 model = cb.CatBoostRegressor()
-model.load_model(base + "models/exp_model.cbm")
+model.load_model(os.path.join(BASE_DIR, "models","exp_model.cbm"))
 
 
 result = pd.DataFrame(
@@ -30,8 +31,8 @@ now = now.replace(":", "_")
 now_day = time.strftime("%Y-%m-%d", time.localtime())
 
 
-os.makedirs(base + result_path + now_day, exist_ok=True)
+os.makedirs(os.path.join(BASE_DIR, result_path, now_day), exist_ok=True)
 
 if __name__ == "__main__":
-    result.to_excel(base + result_path + now_day + f"/Forecast_Results_{now}.xlsx")
+    result.to_excel(os.path.join(BASE_DIR, result_path, now_day, f"Forecast_Results_{now}.xlsx"))
     print(f"Forecasting completed and results saved to {now_day}/Forecast_Results_{now}.xlsx")

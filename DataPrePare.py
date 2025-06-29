@@ -9,6 +9,7 @@ from utils.data_prepare_config import data_prepare_config
 from utils.data_prepare_functions import DataPrepareFunctions
 import pandas as pd
 import warnings
+import os
 
 # -----------------------------
 
@@ -18,12 +19,14 @@ import warnings
 warnings.filterwarnings("ignore")
 # -----------------------------
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class DataPrepare:
     """
     Class to handle data preparation tasks.
     This class orchestrates the loading, processing, and saving of data.
     """
+    
 
     def __init__(self, data_path, config_path, historical_path, forecast_path):
         self.data_path = data_path
@@ -69,14 +72,15 @@ class DataPrepare:
         )
 
         epias_proc = epias_cfg["process"]
+        pk_path = os.path.join(BASE_DIR, "data", "raw", "2020_2025_pk.parquet")
         epias_df = epias_processor.epias_processor(
             epias_df_raw,
             epias_proc["epias_periods"],
             epias_proc["epias_variables"],
             epias_proc["epias_functions"],
             epias_proc["epias_window"],
-            epias_proc["pk_path"],
-            epias_proc["start_date"],
+            pk_path=pk_path,
+            start_date=epias_proc["start_date"],
         )
         # -----------------------------
 
