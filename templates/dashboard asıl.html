@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Consumption Predictor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body.dark-mode {
+            background-color: #1e1e2f;
+            color: #eaeaea;
+        }
+        h2 {
+            color: #2c3e50;
+        }
+        .dark-mode h2 {
+            color: #e0eaff;
+        }
+        .upload-area {
+            border: 2px dashed #dee2e6;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            background-color: #ffffff;
+            border-radius: 8px;
+        }
+        .dark-mode .upload-area {
+            background-color: #2b2b3c;
+            border-color: #555;
+        }
+        table th, table td {
+            vertical-align: middle !important;
+        }
+        .table thead {
+            background-color: #ecf0f1;
+        }
+        .dark-mode .table {
+            color: #f5f5f5;
+            background-color: #333;
+        }
+        .dark-mode .table thead {
+            background-color: #444;
+        }
+        .dark-mode .alert-warning {
+            background-color: #5c4d1e;
+            color: #fff5cc;
+        }
+        .dark-mode .alert-danger {
+            background-color: #8a3b3b;
+            color: #ffe6e6;
+        }
+    </style>
+</head>
+<body class="dark-mode">
+<div class="container my-5">
+    <!-- Gece-Gündüz Butonu -->
+    <div class="text-end mb-3">
+        <button class="btn btn-outline-light btn-sm" onclick="toggleDarkMode()" id="modeToggle">
+            ☀️ Gündüz Modu
+        </button>
+    </div>
+
+    <h2 class="text-center mb-4">Consumption Predictor</h2>
+
+    {% if error_message %}
+    <div class="alert alert-danger alert-dismissible fade show text-center" role="alert">
+        {{ error_message }}<br><strong>Lütfen tekrar deneyiniz.</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+
+    <div class="alert alert-warning text-center">
+        <strong>**</strong> Lütfen daha önce size belirtilen formatta ilgili veriyi yükleyiniz.
+        Veri yüklendikten sonra dosyanızı aşağıdaki input klasöründe görebilirsiniz.
+        Çıktı için output sayfasını kontrol edebilirsiniz.
+    </div>
+
+    <!-- Upload Form -->
+    <form method="POST" enctype="multipart/form-data" class="upload-area">
+        <label for="file" class="form-label">Input Seçmek için tıklayınız:</label>
+        <input type="file" class="form-control mb-3" id="file" name="file" required>
+        <button type="submit" class="btn btn-primary">Yükle ve Tahmini Başlat</button>
+    </form>
+
+    <!-- Input & Output Tables -->
+    <div class="row">
+        <div class="col-md-6">
+            <h5 class="text-center text-primary">Input Files</h5>
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr><th>#</th><th>Dosya</th><th>İndir</th></tr>
+                </thead>
+                <tbody>
+                {% for fname in input_files %}
+                    <tr>
+                        <td>{{ loop.length - loop.index0 }}</td>
+                        <td>{{ fname }}</td>
+                        <td><a href="{{ url_for('download_file', folder='input', filename=fname) }}" class="btn btn-sm btn-outline-secondary">Download</a></td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="3" class="text-center">Henüz input yüklenmedi.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col-md-6">
+            <h5 class="text-center text-success">Output Files</h5>
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr><th>#</th><th>Dosya</th><th>İndir</th></tr>
+                </thead>
+                <tbody>
+                {% for fname in output_files %}
+                    <tr>
+                        <td>{{ loop.length - loop.index0 }}</td>
+                        <td>{{ fname }}</td>
+                        <td><a href="{{ url_for('download_file', folder='output', filename=fname) }}" class="btn btn-sm btn-outline-success">Download</a></td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="3" class="text-center">Henüz çıktı üretilmedi.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS (alert için) + Gece/Gündüz Script -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function toggleDarkMode() {
+    const body = document.body;
+    body.classList.toggle("dark-mode");
+
+    const btn = document.getElementById("modeToggle");
+    if (body.classList.contains("dark-mode")) {
+        btn.innerText = "☀️ Gündüz Modu";
+        btn.classList.remove("btn-outline-dark");
+        btn.classList.add("btn-outline-light");
+    } else {
+        btn.innerText = "🌙 Gece Modu";
+        btn.classList.remove("btn-outline-light");
+        btn.classList.add("btn-outline-dark");
+    }
+}
+</script>
+</body>
+</html>
