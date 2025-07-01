@@ -27,6 +27,7 @@ def get_file_list(folder_path, prefix=None):
                 continue
             if fname.endswith(".xlsx"):
                 files.append(fname)
+    # Tarihe göre ters sıralama (en yeni dosya en üstte)
     files.sort(reverse=True)
     return files
 

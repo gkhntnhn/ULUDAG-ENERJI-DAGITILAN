@@ -3,724 +3,295 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ConsumptionAI - Tüketim Tahmin Platformu</title>
+    <title>Enerji Tüketim Tahmin Platformu</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --primary-color: #2563eb;
-            --primary-dark: #1d4ed8;
-            --secondary-color: #64748b;
-            --success-color: #059669;
-            --warning-color: #d97706;
-            --danger-color: #dc2626;
-            --light-bg: #f8fafc;
-            --dark-bg: #0f172a;
-            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-
-        * {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --secondary: #4cc9f0;
+            --accent: #f72585;
+            --success: #38b000;
+            --light-bg: #DDDAE2;
+            --card-bg: #ffffff;
+            --text-dark: #212529;
+            --text-muted: #6c757d;
         }
 
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            transition: all 0.3s ease;
-            color: #1e293b;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+            padding-top: 2rem;
         }
 
-        body.dark-mode {
-            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-            color: #f1f5f9;
-        }
-
-        .main-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            box-shadow: var(--card-shadow-hover);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            margin: 2rem auto;
-            max-width: 1400px;
-            overflow: hidden;
-        }
-
-        .dark-mode .main-container {
-            background: rgba(15, 23, 42, 0.95);
-            border: 1px solid rgba(71, 85, 105, 0.3);
-        }
-
-        .header-section {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            color: white;
-            padding: 3rem 2rem 2rem;
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-        }
-
-        .header-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-            opacity: 0.3;
-            z-index: -1;
-        }
-
-        .header-content {
-            position: relative;
-            z-index: 10;
-        }
-
-        .brand-logo {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .brand-icon {
-            width: 48px;
-            height: 48px;
-            background: rgba(255, 255, 255, 0.2);
+        .header-logo {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
         }
 
-        .brand-text h1 {
-            margin: 0;
-            font-size: 2rem;
+        .header-title {
+            font-size: 1.8rem;
             font-weight: 700;
-            letter-spacing: -0.025em;
+            color: var(--primary);
+            margin-bottom: 0.2rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
         }
 
-        .brand-text p {
-            margin: 0;
-            opacity: 0.9;
-            font-size: 1.1rem;
+        .header-subtitle {
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-weight: 500;
         }
 
-        .mode-toggle {
-            position: absolute;
-            top: 2rem;
-            right: 2rem;
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            cursor: pointer;
-            z-index: 1000;
-            pointer-events: auto;
+        .card-custom {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease;
         }
 
-        .mode-toggle:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-            color: white;
-        }
-
-        .content-section {
-            padding: 3rem 2rem;
-        }
-
-        .upload-card {
-            background: white;
-            border-radius: 20px;
-            padding: 3rem;
-            box-shadow: var(--card-shadow);
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            margin-bottom: 3rem;
-            transition: all 0.3s ease;
-        }
-
-        .upload-card:hover {
-            box-shadow: var(--card-shadow-hover);
-            transform: translateY(-4px);
-        }
-
-        .dark-mode .upload-card {
-            background: rgba(30, 41, 59, 0.8);
-            border: 1px solid rgba(71, 85, 105, 0.3);
+        .card-custom:hover {
+            transform: translateY(-5px);
         }
 
         .upload-area {
-            border: 2px dashed #cbd5e1;
+            border: 2px dashed var(--primary);
             border-radius: 16px;
-            padding: 3rem;
+            padding: 2rem;
             text-align: center;
-            background: #f8fafc;
+            background-color: rgba(67, 97, 238, 0.03);
+            cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .upload-area::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.1), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .upload-area:hover::before {
-            left: 100%;
         }
 
         .upload-area:hover {
-            border-color: var(--primary-color);
-            background: rgba(37, 99, 235, 0.05);
+            background-color: rgba(67, 97, 238, 0.08);
         }
 
-        .dark-mode .upload-area {
-            background: rgba(15, 23, 42, 0.5);
-            border-color: #475569;
+        .file-list {
+            border-left: 3px solid var(--primary);
+            padding-left: 1rem;
         }
 
-        .upload-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.5rem;
-            color: white;
-            font-size: 2rem;
+        .file-item {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #eee;
         }
 
-        .file-input-wrapper {
-            position: relative;
-            display: inline-block;
-            margin: 1.5rem 0;
+        .file-item:last-child {
+            border-bottom: none;
         }
 
-        .file-input {
-            opacity: 0;
-            position: absolute;
-            z-index: -1;
-        }
-
-        .file-input-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 1rem 2rem;
-            background: var(--primary-color);
-            color: white;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-
-        .file-input-label:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
-        }
-
-        .submit-btn {
-            background: linear-gradient(135deg, var(--success-color), #047857);
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
             border: none;
-            color: white;
-            padding: 1rem 3rem;
-            border-radius: 12px;
+            padding: 0.5rem 1.5rem;
             font-weight: 600;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            margin-top: 1.5rem;
         }
 
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(5, 150, 105, 0.4);
-        }
-
-        .files-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        @media (max-width: 968px) {
-            .files-section {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .file-card {
-            background: white;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: var(--card-shadow);
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            transition: all 0.3s ease;
-        }
-
-        .file-card:hover {
-            box-shadow: var(--card-shadow-hover);
-            transform: translateY(-4px);
-        }
-
-        .dark-mode .file-card {
-            background: rgba(30, 41, 59, 0.8);
-            border: 1px solid rgba(71, 85, 105, 0.3);
-        }
-
-        .file-card-header {
-            padding: 1.5rem 2rem;
-            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
-        }
-
-        .dark-mode .file-card-header {
-            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(51, 65, 85, 0.8));
-            border-bottom: 1px solid rgba(71, 85, 105, 0.3);
-        }
-
-        .file-card-title {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin: 0;
+        .btn-success-custom {
+            background: linear-gradient(135deg, var(--success), #4cc9f0);
+            border: none;
+            padding: 0.5rem 1.5rem;
             font-weight: 600;
-            font-size: 1.1rem;
         }
 
-        .file-card-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-            color: white;
+        .file-icon {
+            color: var(--primary);
+            margin-right: 0.5rem;
         }
 
-        .input-icon {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-        }
-
-        .output-icon {
-            background: linear-gradient(135deg, var(--success-color), #047857);
-        }
-
-        .file-table {
-            margin: 0;
-        }
-
-        .file-table th {
-            background: none;
-            border: none;
-            padding: 1rem 2rem;
-            font-weight: 600;
-            color: var(--secondary-color);
-            font-size: 0.875rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .file-table td {
-            padding: 1rem 2rem;
-            border: none;
-            border-top: 1px solid rgba(226, 232, 240, 0.5);
-            vertical-align: middle;
-        }
-
-        .dark-mode .file-table td {
-            border-top: 1px solid rgba(71, 85, 105, 0.3);
-        }
-
-        .download-btn {
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .download-btn:hover {
-            transform: translateY(-1px);
-            text-decoration: none;
-        }
-
-        .download-input {
-            background: rgba(37, 99, 235, 0.1);
-            color: var(--primary-color);
-            border: 1px solid rgba(37, 99, 235, 0.3);
-        }
-
-        .download-input:hover {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .download-output {
-            background: rgba(5, 150, 105, 0.1);
-            color: var(--success-color);
-            border: 1px solid rgba(5, 150, 105, 0.3);
-        }
-
-        .download-output:hover {
-            background: var(--success-color);
-            color: white;
-        }
-
-        .alert-modern {
-            border: none;
-            border-radius: 16px;
-            padding: 1.5rem 2rem;
-            margin-bottom: 2rem;
-            background: rgba(217, 119, 6, 0.1);
-            border-left: 4px solid var(--warning-color);
-            backdrop-filter: blur(10px);
-        }
-
-        .alert-danger-modern {
-            background: rgba(220, 38, 38, 0.1);
-            border-left: 4px solid var(--danger-color);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem 2rem;
-            color: var(--secondary-color);
-        }
-
-        .empty-state-icon {
-            width: 64px;
-            height: 64px;
-            background: rgba(148, 163, 184, 0.1);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1rem;
-            font-size: 1.5rem;
-            color: var(--secondary-color);
-        }
-
-        .fade-in {
-            animation: fadeIn 0.6s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.7;
-            }
+        .result-icon {
+            color: var(--success);
+            margin-right: 0.5rem;
         }
     </style>
 </head>
-<body class="dark-mode">
-    <div class="main-container fade-in">
-        <!-- Header Section -->
-        <div class="header-section">
-            <button class="mode-toggle" onclick="toggleDarkMode()" id="modeToggle">
-                <i class="fas fa-sun me-2"></i>
-                Gündüz Modu
-            </button>
-            
-            <div class="header-content">
-                <div class="brand-logo">
-                    <div class="brand-icon">
+<body>
+    <div class="container">
+        <!-- Güncellenmiş Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex align-items-center">
+                    <div class="header-logo me-3">
                         <i class="fas fa-chart-line"></i>
                     </div>
-                    <div class="brand-text">
-                        <h1>ConsumptionAI</h1>
-                        <p>Gelişmiş Tüketim Tahmin Platformu</p>
+                    <div>
+                        <h1 class="header-title">Enerji Tüketim Tahmin Platformu</h1>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Content Section -->
-        <div class="content-section">
-            {% if error_message %}
-            <div class="alert alert-modern alert-danger-modern fade-in" role="alert">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-exclamation-triangle me-3" style="font-size: 1.5rem;"></i>
-                    <div>
-                        <strong>İşlem Hatası</strong><br>
-                        {{ error_message }}
-                    </div>
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            {% endif %}
-
-            <div class="alert alert-modern fade-in">
-                <div class="d-flex align-items-start">
-                    <i class="fas fa-info-circle me-3 mt-1" style="font-size: 1.2rem; color: var(--warning-color);"></i>
-                    <div>
-                        <strong>Önemli Bilgilendirme</strong><br>
-                        Lütfen size belirtilen Excel formatında veri dosyanızı yükleyiniz. 
-                        Yüklenen dosyalar otomatik olarak işlenerek tahmin sonuçları oluşturulacaktır.
-                        İşlem tamamlandıktan sonra çıktı dosyalarınızı aşağıdaki tablodan indirebilirsiniz.
-                    </div>
-                </div>
-            </div>
-
-            <!-- Upload Card -->
-            <div class="upload-card fade-in">
-                <form method="POST" enctype="multipart/form-data">
-                    <div class="upload-area">
-                        <div class="upload-icon pulse">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                        </div>
-                        <h4 style="margin-bottom: 1rem; font-weight: 600;">Veri Dosyası Yükle</h4>
-                        <p style="color: var(--secondary-color); margin-bottom: 1.5rem;">
-                            Excel dosyanızı seçin ve analiz işlemini başlatın
-                        </p>
+        <!-- Upload Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card card-custom">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4"><i class="fas fa-cloud-upload-alt me-2"></i>Veri Yükleme</h5>
                         
-                        <div class="file-input-wrapper">
-                            <input type="file" class="file-input" id="file" name="file" required accept=".xlsx,.xls">
-                            <label for="file" class="file-input-label">
-                                <i class="fas fa-file-excel"></i>
-                                Dosya Seç
-                            </label>
-                        </div>
-                        
-                        <div id="file-name-display" style="margin-top: 1rem; font-weight: 500; color: var(--success-color);"></div>
-                        
-                        <button type="submit" class="submit-btn">
-                            <i class="fas fa-rocket me-2"></i>
-                            Analizi Başlat
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Files Section -->
-            <div class="files-section">
-                <!-- Input Files -->
-                <div class="file-card fade-in">
-                    <div class="file-card-header">
-                        <h5 class="file-card-title">
-                            <div class="file-card-icon input-icon">
-                                <i class="fas fa-upload"></i>
+                        <form id="uploadForm" method="POST" enctype="multipart/form-data">
+                            <div id="dropZone" class="upload-area mb-3">
+                                <i class="fas fa-file-excel fa-3x mb-3" style="color: var(--primary);"></i>
+                                <h5 class="mb-2">Dosyanızı sürükleyip bırakın veya seçin</h5>
+                                <p class="text-muted mb-3">.xlsx veya .xls formatında</p>
+                                <input type="file" id="fileInput" name="file" class="d-none" accept=".xlsx,.xls" required>
+                                <button type="button" class="btn btn-primary-custom text-white" onclick="document.getElementById('fileInput').click()">
+                                    <i class="fas fa-folder-open me-2"></i>Dosya Seç
+                                </button>
                             </div>
-                            Yüklenen Dosyalar
-                        </h5>
-                    </div>
-                    
-                    {% if input_files %}
-                    <table class="table file-table">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Dosya Adı</th>
-                                <th>İşlem</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        {% for fname in input_files %}
-                            <tr>
-                                <td><span class="badge bg-primary">{{ loop.length - loop.index0 }}</span></td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <i class="fas fa-file-excel me-2 text-success"></i>
-                                        {{ fname }}
+                            
+                            <div id="fileInfo" class="d-none">
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-file-excel fa-2x me-3" style="color: var(--primary);"></i>
+                                    <div>
+                                        <h6 id="fileName" class="mb-0">consumption.xlsx</h6>
+                                        <small class="text-muted" id="fileSize">15 MB</small>
                                     </div>
-                                </td>
-                                <td>
-                                    <a href="{{ url_for('download_file', folder='input', filename=fname) }}" 
-                                       class="download-btn download-input">
-                                        <i class="fas fa-download"></i>
-                                        İndir
-                                    </a>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                    {% else %}
-                    <div class="empty-state">
-                        <div class="empty-state-icon">
-                            <i class="fas fa-folder-open"></i>
-                        </div>
-                        <p><strong>Henüz dosya yüklenmedi</strong><br>İlk dosyanızı yükleyerek başlayın</p>
-                    </div>
-                    {% endif %}
-                </div>
-
-                <!-- Output Files -->
-                <div class="file-card fade-in">
-                    <div class="file-card-header">
-                        <h5 class="file-card-title">
-                            <div class="file-card-icon output-icon">
-                                <i class="fas fa-download"></i>
+                                </div>
                             </div>
-                            Sonuç Dosyaları
-                        </h5>
+                            
+                            <button type="submit" class="btn btn-success-custom text-white w-100 py-2" id="submitBtn">
+                                <i class="fas fa-rocket me-2"></i>Analizi Başlat
+                            </button>
+                        </form>
                     </div>
-                    
-                    {% if output_files %}
-                    <table class="table file-table">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Dosya Adı</th>
-                                <th>İşlem</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        {% for fname in output_files %}
-                            <tr>
-                                <td><span class="badge bg-success">{{ loop.length - loop.index0 }}</span></td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <i class="fas fa-chart-bar me-2 text-primary"></i>
-                                        {{ fname }}
-                                    </div>
-                                </td>
-                                <td>
-                                    <a href="{{ url_for('download_file', folder='output', filename=fname) }}" 
-                                       class="download-btn download-output">
-                                        <i class="fas fa-download"></i>
-                                        İndir
-                                    </a>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                    {% else %}
-                    <div class="empty-state">
-                        <div class="empty-state-icon">
-                            <i class="fas fa-chart-line"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="row">
+            <!-- Input Files -->
+            <div class="col-md-6 mb-4">
+                <div class="card card-custom h-100">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4"><i class="fas fa-database me-2"></i>Yüklenen Veriler</h5>
+                        
+                        {% if input_files %}
+                        <div class="file-list">
+                            {% for file in input_files %}
+                            <div class="file-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge bg-primary me-2">{{ loop.index }}</span>
+                                    <i class="fas fa-file-excel file-icon"></i>
+                                    <span>{{ file }}</span>
+                                </div>
+                                <a href="{{ url_for('download_file', folder='input', filename=file) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </div>
+                            {% endfor %}
                         </div>
-                        <p><strong>Henüz sonuç üretilmedi</strong><br>Dosya yükleyerek analiz sürecini başlatın</p>
+                        {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Henüz dosya yüklenmedi</p>
+                        </div>
+                        {% endif %}
                     </div>
-                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Output Files -->
+            <div class="col-md-6 mb-4">
+                <div class="card card-custom h-100">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4"><i class="fas fa-chart-pie me-2"></i>Analiz Sonuçları</h5>
+                        
+                        {% if output_files %}
+                        <div class="file-list">
+                            {% for file in output_files %}
+                            <div class="file-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge bg-success me-2">{{ loop.index }}</span>
+                                    <i class="fas fa-chart-line result-icon"></i>
+                                    <span>{{ file }}</span>
+                                </div>
+                                <a href="{{ url_for('download_file', folder='output', filename=file) }}" class="btn btn-sm btn-outline-success">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Analiz sonucu bulunmuyor</p>
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Dark/Light mode toggle
-        function toggleDarkMode() {
-            const body = document.body;
-            const btn = document.getElementById("modeToggle");
-            
-            body.classList.toggle("dark-mode");
-            
-            if (body.classList.contains("dark-mode")) {
-                btn.innerHTML = '<i class="fas fa-sun me-2"></i>Gündüz Modu';
-                btn.className = 'mode-toggle btn-outline-light';
-            } else {
-                btn.innerHTML = '<i class="fas fa-moon me-2"></i>Gece Modu';
-                btn.className = 'mode-toggle btn-outline-dark';
-            }
-            
-            // Save preference
-            localStorage.setItem('darkMode', body.classList.contains("dark-mode"));
-        }
-
-        // File input handler
-        document.getElementById('file').addEventListener('change', function(e) {
-            const fileName = e.target.files[0]?.name;
-            const display = document.getElementById('file-name-display');
-            
-            if (fileName) {
-                display.innerHTML = `<i class="fas fa-check-circle me-2"></i>Seçilen dosya: <strong>${fileName}</strong>`;
-                display.style.display = 'block';
-            } else {
-                display.style.display = 'none';
-            }
-        });
-
-        // Load saved theme preference and setup event listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            const savedTheme = localStorage.getItem('darkMode');
-            const body = document.body;
-            const btn = document.getElementById("modeToggle");
-            
-            // Make sure button is clickable
-            btn.style.pointerEvents = 'auto';
-            btn.style.cursor = 'pointer';
-            
-            if (savedTheme === 'false') {
-                body.classList.remove('dark-mode');
-                btn.innerHTML = '<i class="fas fa-moon me-2"></i>Gece Modu';
-                btn.className = 'mode-toggle btn-outline-dark';
-            } else {
-                // Default dark mode
-                body.classList.add('dark-mode');
-                btn.innerHTML = '<i class="fas fa-sun me-2"></i>Gündüz Modu';
-                btn.className = 'mode-toggle btn-outline-light';
-            }
-            
-            // Add click event listener as backup
-            btn.addEventListener('click', function(e) {
+        // Dosya yükleme işlemleri
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        
+        // Sürükle-bırak etkinlikleri
+        ['dragenter', 'dragover'].forEach(event => {
+            dropZone.addEventListener(event, (e) => {
                 e.preventDefault();
-                e.stopPropagation();
-                toggleDarkMode();
+                dropZone.style.borderColor = 'var(--accent)';
+                dropZone.style.backgroundColor = 'rgba(247, 37, 133, 0.05)';
             });
         });
-
-        // Add loading state to form submission
-        document.querySelector('form').addEventListener('submit', function(e) {
-            const submitBtn = document.querySelector('.submit-btn');
-            const originalText = submitBtn.innerHTML;
-            
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>İşleniyor...';
-            submitBtn.disabled = true;
-            
-            // Re-enable after 30 seconds as failsafe
-            setTimeout(() => {
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            }, 30000);
+        
+        ['dragleave', 'drop'].forEach(event => {
+            dropZone.addEventListener(event, (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = 'var(--primary)';
+                dropZone.style.backgroundColor = 'rgba(67, 97, 238, 0.03)';
+            });
         });
-
-        // Add smooth scroll animations
-        document.querySelectorAll('.fade-in').forEach((el, index) => {
-            el.style.animationDelay = `${index * 0.1}s`;
+        
+        dropZone.addEventListener('drop', (e) => {
+            fileInput.files = e.dataTransfer.files;
+            updateFileInfo();
+        });
+        
+        fileInput.addEventListener('change', updateFileInfo);
+        
+        function updateFileInfo() {
+            if(fileInput.files.length) {
+                const file = fileInput.files[0];
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('fileSize').textContent = formatFileSize(file.size);
+                fileInfo.classList.remove('d-none');
+            }
+        }
+        
+        function formatFileSize(bytes) {
+            if(bytes < 1024) return bytes + ' Bytes';
+            else if(bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+            else return (bytes/1048576).toFixed(1) + ' MB';
+        }
+        
+        // Form gönderiminde butonu devre dışı bırak
+        document.getElementById('uploadForm').addEventListener('submit', function() {
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('submitBtn').innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>İşleniyor...';
         });
     </script>
 </body>
