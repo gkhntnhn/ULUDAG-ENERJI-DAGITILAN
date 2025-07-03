@@ -1,65 +1,75 @@
-from src.DataPrePare import DataPrepare
+import os
+import glob
+import shutil
 import pandas as pd
 import catboost as cb
-import time
-import os
-
+from src.DataPrePare import DataPrepare
 
 class ForecastPipeline:
     def __init__(self):
         self.BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-        self.data_path = os.path.join(self.BASE_DIR, "input", "consumption.xlsx")
         self.config_path = os.path.join(self.BASE_DIR, "utils", "config.json")
-        self.historical_path = os.path.join(self.BASE_DIR, "data")
-        self.forecast_path = os.path.join(self.BASE_DIR, "data")
-        self.input_path = os.path.join(self.BASE_DIR, "input")
-        self.output_path = os.path.join(self.BASE_DIR, "output")
-
-        self.current_time = None
-        self.current_day = None
-
-        #self.current_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        #self.current_day = time.strftime("%Y_%m_%d", time.localtime())
-
-        # DataPrepare instance
+        # Flat directories with underscores
+        self.historical_path = os.path.join(self.BASE_DIR, "data", "historical_data")
+        self.forecast_path = os.path.join(self.BASE_DIR, "data", "forecast_data")
+        self.model_path = os.path.join(self.BASE_DIR, "models", "exp_model.cbm")
+        # Ensure directories exist (create if missing, do nothing if present)
+        os.makedirs(self.historical_path, exist_ok=True)
+        os.makedirs(self.forecast_path, exist_ok=True)
+        # Initialize DataPrepare with new paths
         self.DP = DataPrepare(
-            self.data_path, self.config_path, self.historical_path, self.forecast_path
+            None, self.config_path, self.historical_path, self.forecast_path
         )
 
-    def run(self):
-        # Prepare data
-        df, forecast_df_result_path = self.DP.DataPrepareFunction(
-            self.data_path,
+    def run(self, input_path: str, timestamp: str) -> pd.DataFrame:
+        # Prepare data; returns DataFrame and raw forecast parquet path
+        df, forecast_parquet = self.DP.DataPrepareFunction(
+            input_path,
             self.config_path,
             self.historical_path,
             self.forecast_path,
         )
 
-        # Load forecast data
-        forecast = pd.read_parquet(forecast_df_result_path)
-        # Load model
+        # Move and rename forecast parquet to flat forecast_data folder
+        forecast_target = os.path.join(self.forecast_path, f"{timestamp}_forecast_data.parquet")
+        os.replace(forecast_parquet, forecast_target)
+
+        # Handle nested historical parquet if present
+        nested = glob.glob(os.path.join(self.historical_path, "*", "Historical_Data", "*.parquet"))
+        if nested:
+            orig_hist = nested[0]
+            hist_target = os.path.join(self.historical_path, f"{timestamp}_historical_data.parquet")
+            os.replace(orig_hist, hist_target)
+            # Clean up nested folder
+            nested_date_dir = os.path.dirname(os.path.dirname(orig_hist))
+            shutil.rmtree(nested_date_dir, ignore_errors=True)
+        else:
+            # Fallback: write df to parquet
+            hist_target = os.path.join(self.historical_path, f"{timestamp}_historical_data.parquet")
+            df.to_parquet(hist_target)
+
+        # Load forecast data and predict
+        forecast_df = pd.read_parquet(forecast_target)
         model = cb.CatBoostRegressor()
-        model.load_model(os.path.join(self.BASE_DIR, "models", "exp_model.cbm"))
+        model.load_model(self.model_path)
+        features = forecast_df.drop(columns=['consumption'], errors='ignore')
+        predictions = model.predict(features)
+        output_df = pd.DataFrame(predictions, columns=['Predicted_Consumption'], index=forecast_df.index)
+        return output_df
 
-        # Predict
-        output = pd.DataFrame(
-            model.predict(forecast.drop(columns=["consumption"])),
-            columns=["consumption"],
-        ).set_index(forecast.index)
+if __name__ == '__main__':
+    import sys
+    from datetime import datetime
+    import pytz
 
-        # Save results
-        day_folder = os.path.join(self.output_path, self.current_day)
-        os.makedirs(day_folder, exist_ok=True)
+    if len(sys.argv) < 2:
+        print("Usage: python predict_pipeline.py <input_path>")
+        exit(1)
 
-        file_path = os.path.join(
-            day_folder, f"Forecast_Results_{self.current_time}.xlsx"
-        )
-        output.to_excel(file_path)
-
-        print(f"Forecasting completed and results saved to {file_path}")
-
-
-if __name__ == "__main__":
+    tz = pytz.timezone('Europe/Istanbul')
+    timestamp = datetime.now(tz).strftime('%d_%m_%Y_%H_%M')
     pipeline = ForecastPipeline()
-    pipeline.run()
+    df = pipeline.run(sys.argv[1], timestamp)
+    # Include index in Excel
+    df.to_excel(f"{timestamp}_output.xlsx")
+    print("Forecasting completed.")

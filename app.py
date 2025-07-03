@@ -1,98 +1,94 @@
-from flask import Flask, request, render_template, send_file#, redirect, url_for
-from datetime import datetime
+from flask import Flask, request, render_template, jsonify
 import os
+import tempfile
 import shutil
+from datetime import datetime
+import pytz
+import smtplib
+from email.message import EmailMessage
+import traceback
 
 from predict_pipeline import ForecastPipeline
 
-app = Flask(__name__)
+# --- Configuration ---
+SMTP_SERVER = 'smtp.gmail.com'
+SMTP_PORT = 587
+SMTP_USERNAME = 'itsafuccingdemo@gmail.com'
+SMTP_PASSWORD = 'lefi nrpu ixai kfhy'
+SENDER_EMAIL = 'itsafuccingdemo@gmail.com'
 
-# Klasör yolları
+# --- App Initialization ---
+app = Flask(__name__, template_folder='templates')
+
+# Ensure base folders exist
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-INPUT_DIR = os.path.join(BASE_DIR, "input")
-RAW_DIR = os.path.join(INPUT_DIR, "raw")
-OUTPUT_DIR = os.path.join(BASE_DIR, "output")
+for folder in ('input', 'output', 'send'):
+    os.makedirs(os.path.join(BASE_DIR, folder), exist_ok=True)
 
-# Gerekli klasörler oluşturuluyor
-os.makedirs(INPUT_DIR, exist_ok=True)
-os.makedirs(RAW_DIR, exist_ok=True)
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+@app.route('/', methods=['GET'])
+def index():
+    return render_template('dashboard.html')
 
-# Yardımcı: klasörden dosya isimlerini getir
-def get_file_list(folder_path, prefix=None):
-    files = []
-    if os.path.exists(folder_path):
-        for fname in os.listdir(folder_path):
-            if prefix and not fname.startswith(prefix):
-                continue
-            if fname.endswith(".xlsx"):
-                files.append(fname)
-    # Tarihe göre ters sıralama (en yeni dosya en üstte)
-    files.sort(reverse=True)
-    return files
+@app.route('/analyze', methods=['POST'])
+def analyze():
+    try:
+        if 'file' not in request.files or request.files['file'].filename == '':
+            return jsonify({'status':'error','message':'Dosya bulunamadı veya adı boş'}), 400
+        file = request.files['file']
+        if not file.filename.lower().endswith('.xlsx'):
+            return jsonify({'status':'error','message':'Yalnızca .xlsx dosya yükleyebilirsiniz'}), 400
 
-@app.route("/", methods=["GET", "POST"])
-def upload_file():
-    error_message = None  # Default hata mesajı boş
+        email = request.form.get('email')
+        if not email:
+            return jsonify({'status':'error','message':'E-posta adresi gerekli'}), 400
 
-    if request.method == "POST":
-        file = request.files["file"]
-        timestamp = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+        tz = pytz.timezone('Europe/Istanbul')
+        timestamp = datetime.now(tz).strftime('%d_%m_%Y_%H_%M')
 
-        original_filename = file.filename
-        original_name, extension = os.path.splitext(original_filename)
-
-        raw_filename = f"{original_name}_{timestamp}{extension}"
-        raw_path = os.path.join(RAW_DIR, raw_filename)
-        file.save(raw_path)
-
-        model_input_filename = f"client_upload_{timestamp}{extension}"
-        model_input_path = os.path.join(INPUT_DIR, model_input_filename)
-        shutil.copyfile(raw_path, model_input_path)
-
-        try:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            temp_input = os.path.join(tmpdir, 'input.xlsx')
+            file.save(temp_input)
             pipeline = ForecastPipeline()
-            pipeline.data_path = model_input_path
-            pipeline.current_time = datetime.strptime(timestamp, "%Y_%m_%d_%H_%M_%S").strftime("%Y_%m_%d_%H_%M_%S")
-            pipeline.current_day = datetime.strptime(timestamp, "%Y_%m_%d_%H_%M_%S").strftime("%Y_%m_%d")
-            pipeline.run()
+            output_df = pipeline.run(temp_input, timestamp)
 
-        except Exception as e:
-            print(f"Hata oluştu: {e}")
-            if os.path.exists(model_input_path):
-                os.remove(model_input_path)
-            if os.path.exists(raw_path):
-                os.remove(raw_path)
+            msg = EmailMessage()
+            msg['Subject'] = 'Enerji Tahmin Sonuçlarınız'
+            msg['From'] = SENDER_EMAIL
+            msg['To'] = email
+            msg.set_content('Merhaba,\n\nEnerji tahmin sonuçlarınız ektedir.\n\nİyi çalışmalar.')
 
-            # Hata mesajını template'e ilet
-            error_message = f"İşlem sırasında hata oluştu: {str(e)}. Lütfen tekrar deneyiniz."
+            output_filename = "{}_output.xlsx".format(timestamp)
+            temp_output = os.path.join(tmpdir, output_filename)
+            output_df.to_excel(temp_output)  # include index
 
-    input_files = get_file_list(INPUT_DIR, prefix="client_upload")
-    today_output_folder = os.path.join(OUTPUT_DIR, datetime.now().strftime("%Y_%m_%d"))
-    output_files = get_file_list(today_output_folder)
+            with open(temp_output, 'rb') as f:
+                data = f.read()
+            msg.add_attachment(data,
+                               maintype='application',
+                               subtype='vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                               filename=output_filename)
 
-    return render_template(
-        "dashboard.html",
-        input_files=input_files,
-        output_files=output_files,
-        error_message=error_message
-    )
+            with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+                server.starttls()
+                server.login(SMTP_USERNAME, SMTP_PASSWORD)
+                server.send_message(msg)
 
+            final_input = os.path.join(BASE_DIR, 'input', "{}_input.xlsx".format(timestamp))
+            os.replace(temp_input, final_input)
+            final_output = os.path.join(BASE_DIR, 'output', output_filename)
+            os.replace(temp_output, final_output)
 
-@app.route("/download/<folder>/<filename>")
-def download_file(folder, filename):
-    if folder == "input":
-        path = os.path.join(INPUT_DIR, filename)
-    elif folder == "output":
-        output_subdir = os.path.join(OUTPUT_DIR, datetime.now().strftime("%Y_%m_%d"))
-        path = os.path.join(output_subdir, filename)
-    else:
-        return "Geçersiz klasör adı", 400
+            send_eml = os.path.join(BASE_DIR, 'send', "{}_send_to_client.eml".format(timestamp))
+            with open(send_eml, 'wb') as f:
+                f.write(msg.as_bytes())
+            send_xlsx = os.path.join(BASE_DIR, 'send', "{}_send_to_client.xlsx".format(timestamp))
+            shutil.copyfile(final_output, send_xlsx)
 
-    if not os.path.exists(path):
-        return "Dosya bulunamadı", 404
+        return jsonify({'status':'ok','message':'Sonuç iletildi, mailinizi kontrol edin'}), 200
 
-    return send_file(path, as_attachment=True)
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'status':'error','message':'İşlem sırasında hata oluştu: {}'.format(str(e))}), 500
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(debug=True)
