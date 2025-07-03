@@ -55,6 +55,7 @@ class ForecastPipeline:
         features = forecast_df.drop(columns=['consumption'], errors='ignore')
         predictions = model.predict(features)
         output_df = pd.DataFrame(predictions, columns=['Predicted_Consumption'], index=forecast_df.index)
+        output_df = output_df.iloc[-24:,:]  # Keep only the last 24 hours
         return output_df
 
 if __name__ == '__main__':
