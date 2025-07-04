@@ -1,25 +1,29 @@
-# 1. uv imajından başla
-FROM ghcr.io/astral-sh/uv:python3.12-slim-bookworm
+# Dockerfile
 
-# 2. uv için sistem ortamı
-ENV UV_PROJECT_ENVIRONMENT=system
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
-# 3. Çalışma dizini
 WORKDIR /app
 
-# 4. Bağımlılıkları yükle
-COPY pyproject.toml uv.lock* ./
-RUN uv sync --locked
+# 1) Copy environment file for python-dotenv
+COPY .env ./
 
-# 5. Uygulama kodunu kopyala
+# 2) Copy dependency files
+COPY pyproject.toml uv.lock ./
+
+# 3) Sync UV environment, export to requirements.txt, then install via pip
+RUN uv sync --locked \
+ && uv export --format requirements.txt --output-file requirements.txt \
+ && pip install --upgrade pip \
+ && pip install --no-cache-dir -r requirements.txt
+
+# 4) Copy the rest of the application code
 COPY . /app
 
-# 6. Klasörleri oluştur ve izinleri kıs
+# 5) Create runtime directories with restricted permissions
 RUN mkdir -p input output send \
-    && chmod 700 input output send
+ && chmod 700 input output send
 
-# 7. Port aç
 EXPOSE 80
 
-# 8. Production’da gunicorn ile başlat
-CMD ["gunicorn", "app:app", "--workers", "4", "--bind", "0.0.0.0:80"]
+# 6) Start the app with Gunicorn, extended timeout for long-running jobs
+CMD ["gunicorn", "app:app", "--workers", "4", "--bind", "0.0.0.0:80", "--timeout", "6000"]
