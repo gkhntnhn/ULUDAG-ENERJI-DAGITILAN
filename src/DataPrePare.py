@@ -60,9 +60,11 @@ class DataPrepare:
         # Consumption Data
         # -----------------------------
         consumption_cfg = config["consumption"]
-        consumption_processor = ConsumptionDataProcessor(variables=consumption_cfg["variables"],
-                                                         lags=consumption_cfg["lags"],
-                                                         functions=consumption_cfg["functions"])
+        consumption_processor = ConsumptionDataProcessor(
+            variables=consumption_cfg["variables"],
+            lags=consumption_cfg["lags"],
+            functions=consumption_cfg["functions"],
+        )
         consumption = consumption_processor.transform(df=data)
         # -----------------------------
 
@@ -134,7 +136,13 @@ class DataPrepare:
         # Prepare Main Data
         # -----------------------------
         df = prepare_functions.main_data_prepare(
-            data, consumption, epias_df, solar_df, calendar_df, weather_df, weighted_weather_df
+            data,
+            consumption,
+            epias_df,
+            solar_df,
+            calendar_df,
+            weather_df,
+            weighted_weather_df,
         )
         # -----------------------------
 

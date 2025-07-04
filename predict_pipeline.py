@@ -5,6 +5,7 @@ import pandas as pd
 import catboost as cb
 from src.DataPrePare import DataPrepare
 
+
 class ForecastPipeline:
     def __init__(self):
         self.BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -31,34 +32,45 @@ class ForecastPipeline:
         )
 
         # Move and rename forecast parquet to flat forecast_data folder
-        forecast_target = os.path.join(self.forecast_path, f"{timestamp}_forecast_data.parquet")
+        forecast_target = os.path.join(
+            self.forecast_path, f"{timestamp}_forecast_data.parquet"
+        )
         os.replace(forecast_parquet, forecast_target)
 
         # Handle nested historical parquet if present
-        nested = glob.glob(os.path.join(self.historical_path, "*", "Historical_Data", "*.parquet"))
+        nested = glob.glob(
+            os.path.join(self.historical_path, "*", "Historical_Data", "*.parquet")
+        )
         if nested:
             orig_hist = nested[0]
-            hist_target = os.path.join(self.historical_path, f"{timestamp}_historical_data.parquet")
+            hist_target = os.path.join(
+                self.historical_path, f"{timestamp}_historical_data.parquet"
+            )
             os.replace(orig_hist, hist_target)
             # Clean up nested folder
             nested_date_dir = os.path.dirname(os.path.dirname(orig_hist))
             shutil.rmtree(nested_date_dir, ignore_errors=True)
         else:
             # Fallback: write df to parquet
-            hist_target = os.path.join(self.historical_path, f"{timestamp}_historical_data.parquet")
+            hist_target = os.path.join(
+                self.historical_path, f"{timestamp}_historical_data.parquet"
+            )
             df.to_parquet(hist_target)
 
         # Load forecast data and predict
         forecast_df = pd.read_parquet(forecast_target)
         model = cb.CatBoostRegressor()
         model.load_model(self.model_path)
-        features = forecast_df.drop(columns=['consumption'], errors='ignore')
+        features = forecast_df.drop(columns=["consumption"], errors="ignore")
         predictions = model.predict(features)
-        output_df = pd.DataFrame(predictions, columns=['Predicted_Consumption'], index=forecast_df.index)
-        output_df = output_df.iloc[-24:,:]  # Keep only the last 24 hours
+        output_df = pd.DataFrame(
+            predictions, columns=["Predicted_Consumption"], index=forecast_df.index
+        )
+        output_df = output_df.iloc[-24:, :]  # Keep only the last 24 hours
         return output_df
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     import sys
     from datetime import datetime
     import pytz
@@ -67,8 +79,8 @@ if __name__ == '__main__':
         print("Usage: python predict_pipeline.py <input_path>")
         exit(1)
 
-    tz = pytz.timezone('Europe/Istanbul')
-    timestamp = datetime.now(tz).strftime('%d_%m_%Y_%H_%M')
+    tz = pytz.timezone("Europe/Istanbul")
+    timestamp = datetime.now(tz).strftime("%d_%m_%Y_%H_%M")
     pipeline = ForecastPipeline()
     df = pipeline.run(sys.argv[1], timestamp)
     # Include index in Excel

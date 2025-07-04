@@ -15,6 +15,7 @@ from feature_engine.timeseries.forecasting import (
 pd.set_option("display.width", 50000)
 pd.set_option("display.max_columns", None)
 
+
 class EpiasDataProcessor:
     def __init__(self):
         self.tgt_code = None

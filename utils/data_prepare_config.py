@@ -1,6 +1,10 @@
 import json
 from datetime import datetime, timedelta
 import pandas as pd
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 
 def data_prepare_config(config_path: str, data_df: pd.DataFrame = None) -> dict:
@@ -11,6 +15,17 @@ def data_prepare_config(config_path: str, data_df: pd.DataFrame = None) -> dict:
     today = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%dT00:00:00+03:00")
     if config["epias"]["end_date"] is None:
         config["epias"]["end_date"] = today
+
+    epias_username = os.getenv("EPIAS_USERNAME")
+    epias_password = os.getenv("EPIAS_PASSWORD")
+
+    if not epias_username or not epias_password:
+        raise ValueError(
+            "EPIAŞ kullanıcı adı ve şifresi .env dosyasından alınamadı. Lütfen kontrol edin."
+        )
+
+    config["epias"]["username"] = epias_username
+    config["epias"]["password"] = epias_password
 
     # Solar end_date, start_date'e 10 yıl eklenerek hesaplanır
     solar_start = datetime.strptime(config["solar"]["start_date"], "%Y-%m-%d")

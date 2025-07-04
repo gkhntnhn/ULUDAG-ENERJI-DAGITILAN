@@ -2,7 +2,7 @@ import pandas as pd
 from functools import reduce
 from src.historical_weather_data import HistoricalWeatherDataProcessor
 from src.forecast_weather_data import ForecastWeatherDataProcessor
-import time 
+import time
 import os
 
 
@@ -19,7 +19,14 @@ class DataPrepareFunctions:
         return weather_df.reset_index(drop=True)
 
     def main_data_prepare(
-        self, data, consumption, epias_df, solar_df, calendar_df, weather_df, weighted_weather_df
+        self,
+        data,
+        consumption,
+        epias_df,
+        solar_df,
+        calendar_df,
+        weather_df,
+        weighted_weather_df,
     ):
         dataframes = [
             data,
@@ -44,7 +51,6 @@ class DataPrepareFunctions:
         return df
 
     def process_save_main_data(self, df, historical_df_path, forecast_df_path):
-
         day_folder = os.path.join(historical_df_path, self.current_day)
 
         # Create directories if they do not exist
@@ -66,11 +72,17 @@ class DataPrepareFunctions:
         df[bool_cols] = df[bool_cols].apply(lambda x: x.astype(bool))
 
         historical_df = df.iloc[:-48, :].copy()
-        historical_df.to_parquet(historical_df_path + "/Historical_Data_" + self.current_time + ".parquet")
+        historical_df.to_parquet(
+            historical_df_path + "/Historical_Data_" + self.current_time + ".parquet"
+        )
         forecast_df = df.iloc[-48:, :].copy()
-        forecast_df.to_parquet(forecast_df_path + "/Forecast_Data_" + self.current_time + ".parquet")
-        forecast_df_result_path = forecast_df_path + "/Forecast_Data_" + self.current_time + ".parquet"
-        return df,forecast_df_result_path
+        forecast_df.to_parquet(
+            forecast_df_path + "/Forecast_Data_" + self.current_time + ".parquet"
+        )
+        forecast_df_result_path = (
+            forecast_df_path + "/Forecast_Data_" + self.current_time + ".parquet"
+        )
+        return df, forecast_df_result_path
 
     def generate_multi_location_weather_data(self, config):
         weather_dfs = []
@@ -138,7 +150,10 @@ class DataPrepareFunctions:
             ]
 
             # Ağırlık vektörünü oluştur
-            weights = [location_weights.get(col.rsplit("_", 1)[-1], 0) for col in cols_for_feature]
+            weights = [
+                location_weights.get(col.rsplit("_", 1)[-1], 0)
+                for col in cols_for_feature
+            ]
             feature_matrix = weather_df[cols_for_feature].values
 
             # Ağırlıklı ortalamayı vektörize şekilde hesapla
